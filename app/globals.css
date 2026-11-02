@@ -1,0 +1,416 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Colours are the University of Tübingen palette (as in tueplots):
+   tue_dark for ink, tue_red for links. */
+:root {
+  color-scheme: light dark;
+  --paper: #f6f7f8;
+  --ink: #232a31;
+  --muted: #5d6771;
+  --surface: #eceef0;
+  --rule: #d3d7db;
+  --accent: #8d2d39;
+  --fish-pale: #b9c0c6;
+  --fish-bold: #37414a;
+  --fish-eye: #b0384a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #171c21;
+    --ink: #e3e6e9;
+    --muted: #9aa3ac;
+    --surface: #1f252b;
+    --rule: #3a434c;
+    --accent: #e08791;
+    --fish-pale: #4f5964;
+    --fish-bold: #e3e6e9;
+    --fish-eye: #e0697a;
+  }
+}
+
+html {
+  touch-action: manipulation;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  transition: text-decoration-color 0.2s ease;
+}
+
+h1,
+h2 {
+  text-wrap: balance;
+}
+
+@media (hover: hover) {
+  a:hover {
+    text-decoration-color: var(--accent);
+  }
+}
+
+.account {
+  display: block;
+  color: var(--muted);
+  transition:
+    color 0.2s ease,
+    transform 0.14s var(--ease-out);
+}
+
+.account:is(:hover, :focus-visible) {
+  color: var(--ink);
+}
+
+.account:active {
+  transform: scale(0.9);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+/* Entrance: on load the page settles in reading order, all within about 1.2s.
+   The name rises out of its own baseline while the fish draws itself, then the
+   introduction, the accounts and the publications follow, each from its --d
+   (set in app/page.tsx), and the thumbnails open from the top. Only the
+   arrival is animated: everything is in place on the first frame without it. */
+:root {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.name {
+  overflow: clip;
+  padding-bottom: 0.1em;
+  margin-bottom: -0.1em;
+}
+
+.name > span {
+  display: block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .name > span {
+    animation: rise-line 0.9s 0.12s var(--ease-expo) backwards;
+  }
+
+  .enter {
+    animation: rise 0.6s var(--d, 0s) var(--ease-out) backwards;
+  }
+
+  .paper.enter .thumbnail {
+    animation: open 0.7s var(--d) var(--ease-in-out) backwards;
+  }
+}
+
+@keyframes rise-line {
+  from {
+    transform: translateY(105%);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@keyframes open {
+  from {
+    clip-path: inset(0 0 100% 0 round 3px);
+  }
+  to {
+    clip-path: inset(0 0 0 0 round 3px);
+  }
+}
+
+/* The fish mark (app/FishMark.tsx), animated like the ODE Filters logo and on
+   its spring. On load both strands draw from the nose, the dark one a
+   beat behind, and the eye pops in and glows once they arrive. On hover the
+   fish swims forward with a beat of its tail and blinks; it gives a little
+   when pressed. */
+:root {
+  /* Step response of a light, bouncy damped spring (17% overshoot), sampled. */
+  --spring-lead: linear(
+    0, 0, 0.001, 0.003, 0.009, 0.021, 0.041, 0.07, 0.11, 0.16, 0.222, 0.295,
+    0.377, 0.466, 0.56, 0.657, 0.753, 0.845, 0.93, 1.003, 1.064, 1.111,
+    1.144, 1.163, 1.171, 1.167, 1.155, 1.136, 1.113, 1.087, 1.061, 1.035,
+    1.011, 0.991, 0.973, 0.96, 0.95, 0.945, 0.942, 0.943, 0.946, 0.95,
+    0.957, 0.963, 0.97, 0.977, 0.984, 0.989, 0.994, 0.997, 1
+  );
+}
+
+.fish-link {
+  display: inline-block;
+  text-decoration: none;
+}
+
+.fish {
+  display: block;
+  width: 2.75rem;
+  height: 2.75rem;
+  overflow: visible;
+  transition: transform 0.14s var(--ease-out);
+}
+
+.fish-link:active .fish {
+  transform: scale(0.92);
+}
+
+/* Turns about the head, so that the tail does the swinging. */
+.fish__body {
+  fill: none;
+  stroke-width: 6.6;
+  stroke-linecap: round;
+  transform-box: fill-box;
+  transform-origin: 25% 50%;
+  transition: transform 0.6s var(--ease-out);
+}
+
+/* Each strand is one dash the length of its path; sliding the dash in draws it
+   from the nose. The gap is longer than the path so that no second dash shows
+   at the tail, and there is no overshoot, or the dash would slide past it. */
+.fish__upper,
+.fish__lower {
+  stroke-dasharray: 1 2;
+  animation: fish-draw 0.9s var(--ease-out) both;
+}
+
+.fish__upper {
+  stroke: var(--fish-pale);
+}
+
+.fish__lower {
+  stroke: var(--fish-bold);
+  animation-delay: 0.15s;
+}
+
+.fish__eye,
+.fish__lid {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.fish__eye {
+  fill: var(--fish-eye);
+  stroke: var(--fish-eye);
+  stroke-width: 0;
+  stroke-opacity: 0;
+  animation:
+    fish-pop 0.5s 0.6s var(--spring-lead) both,
+    fish-glow 0.8s 0.95s ease-out;
+}
+
+.fish-link:is(:hover, :focus-visible) .fish__body {
+  transform: translateX(-4px);
+  animation: fish-swim 0.9s cubic-bezier(0.45, 0, 0.3, 1);
+}
+
+.fish-link:is(:hover, :focus-visible) .fish__lid {
+  animation: fish-blink 0.32s 0.18s ease-in-out;
+}
+
+@keyframes fish-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fish-pop {
+  from {
+    transform: scale(0);
+  }
+}
+
+@keyframes fish-glow {
+  from {
+    stroke-width: 0;
+    stroke-opacity: 0.5;
+  }
+  to {
+    stroke-width: 8;
+    stroke-opacity: 0;
+  }
+}
+
+@keyframes fish-swim {
+  from {
+    transform: none;
+  }
+  30% {
+    transform: translateX(-2px) rotate(6deg);
+  }
+  60% {
+    transform: translateX(-3.5px) rotate(-3deg);
+  }
+  to {
+    transform: translateX(-4px);
+  }
+}
+
+@keyframes fish-blink {
+  45%,
+  55% {
+    transform: scaleY(0.1);
+  }
+}
+
+/* Publications: hovering (or focusing) a paper draws a frame round it, brings
+   it a little closer, underlines its title, reveals its summary and plays its
+   thumbnail (the flow one in app/FlowThumbnail.tsx). The summary unfolds and
+   its text settles a moment later; everything returns a little faster than it
+   came. Touch screens cannot hover, so they always show the summary. */
+.paper {
+  position: relative;
+}
+
+.paper:is(:hover, :focus-within) .paper__title {
+  text-decoration-color: var(--accent);
+}
+
+.summary {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.35s var(--ease-out),
+    opacity 0.2s ease;
+}
+
+.summary > * {
+  overflow: hidden;
+  transform: translateY(-6px);
+  transition: transform 0.35s var(--ease-out);
+}
+
+.paper:is(:hover, :focus-within) .summary {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transition:
+    grid-template-rows 0.55s var(--ease-expo),
+    opacity 0.4s 0.1s ease;
+}
+
+.paper:is(:hover, :focus-within) .summary > * {
+  transform: none;
+  transition: transform 0.6s 0.06s var(--ease-expo);
+}
+
+@media (hover: hover) {
+  .paper {
+    transition: transform 0.45s var(--ease-out);
+  }
+
+  .paper::before {
+    content: "";
+    position: absolute;
+    inset: -0.875rem -1rem;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    opacity: 0;
+    transform: scale(0.98);
+    transition:
+      opacity 0.25s ease,
+      transform 0.45s var(--ease-out);
+    pointer-events: none;
+  }
+
+  .paper:is(:hover, :focus-within) {
+    transform: scale(1.015);
+    transition-duration: 0.6s;
+  }
+
+  .paper:is(:hover, :focus-within)::before {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.35s ease,
+      transform 0.6s var(--ease-expo);
+  }
+
+  .thumbnail :is(img, canvas, svg) {
+    transition: transform 0.45s var(--ease-out);
+  }
+
+  .paper:is(:hover, :focus-within) .thumbnail :is(img, canvas, svg) {
+    transform: scale(1.06);
+    transition: transform 0.8s var(--ease-expo);
+  }
+}
+
+@media (hover: none) {
+  .summary {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+
+  .summary > * {
+    transform: none;
+  }
+}
+
+/* The information curves draw again from the left, one after another, and the
+   maxima pop in once their curves have reached them. */
+.info-curve {
+  stroke-dasharray: 1 2;
+}
+
+.info-maximum {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.paper:is(:hover, :focus-within) .info-curve {
+  animation: fish-draw 1s calc(var(--i) * 90ms) var(--ease-out) both;
+}
+
+.paper:is(:hover, :focus-within) .info-maximum {
+  animation: fish-pop 0.5s calc(var(--i) * 90ms + 450ms) var(--spring-lead) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .info-curve,
+  .info-maximum {
+    animation: none !important;
+  }
+
+  .fish__upper,
+  .fish__lower,
+  .fish__eye,
+  .fish__lid,
+  .fish-link .fish__body {
+    animation: none;
+  }
+
+  .fish-link .fish__body,
+  .paper,
+  .paper::before,
+  .thumbnail :is(img, canvas, svg),
+  .summary > * {
+    transition: none;
+    transform: none !important;
+  }
+}

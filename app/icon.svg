@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="4 4 56 56">
+  <!-- A fish drawn like the ODE Filters mark: the two halves of its O, light
+       over dark, pulled out until they cross into a tail; the dot is the eye.
+       One palette for light and dark tab bars: Safari ignores
+       prefers-color-scheme inside SVG favicons. -->
+  <g fill="none" stroke-width="6.6" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke="#B9C0C6" d="M9 32C17 8 39 8 55 45"/>
+    <path stroke="#37414A" d="M9 32C17 56 39 56 55 19"/>
+  </g>
+  <circle cx="22" cy="26" r="3.6" fill="#B0384A"/>
+</svg>
